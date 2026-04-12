@@ -24,7 +24,18 @@ jobs:
       - uses: astral-sh/setup-uv@v5
       - run: uv python install 3.13
       - run: uv sync --python 3.13 --group dev
-      - run: uv run pytest tests/unit/ -v --tb=short
+      - name: Run unit tests
+        shell: pwsh
+        run: |
+          uv run pytest tests/unit/ -v --tb=short *>&1 | Tee-Object -FilePath pytest-unit.log
+          $status = $LASTEXITCODE
+          if ($status -ne 0) {
+            Get-Content pytest-unit.log -Tail 80 | ForEach-Object {
+              $line = $_.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+              Write-Output "::error file=.github/workflows/ci.yml,line=28,title=unit pytest::$line"
+            }
+            exit $status
+          }
 
   test-ml-extra:
     runs-on: ubuntu-latest
@@ -42,4 +53,15 @@ jobs:
       - uses: astral-sh/setup-uv@v5
       - run: uv python install 3.13
       - run: uv sync --python 3.13 --group dev
-      - run: uv run pytest tests/integration/ -v --tb=short
+      - name: Run integration tests
+        shell: pwsh
+        run: |
+          uv run pytest tests/integration/ -v --tb=short *>&1 | Tee-Object -FilePath pytest-integration.log
+          $status = $LASTEXITCODE
+          if ($status -ne 0) {
+            Get-Content pytest-integration.log -Tail 80 | ForEach-Object {
+              $line = $_.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+              Write-Output "::error file=.github/workflows/ci.yml,line=53,title=integration pytest::$line"
+            }
+            exit $status
+          }
