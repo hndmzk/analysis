@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PaperTradingBatch",
+  "type": "object",
+  "required": ["batch_id", "forecast_id", "created_at", "forecast_date", "week_id", "ledger_path", "metrics", "execution_diagnostics", "trades"],
+  "properties": {
+    "batch_id": {"type": "string", "format": "uuid"},
+    "forecast_id": {"type": "string", "format": "uuid"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "forecast_date": {"type": "string", "format": "date"},
+    "week_id": {"type": "string"},
+    "ledger_path": {"type": "string"},
+    "approval": {"type": "string"},
+    "should_retrain": {"type": "boolean"},
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "new_trades": {"type": "integer"},
+        "queued_trades_this_run": {"type": "integer"},
+        "executed_trades_this_run": {"type": "integer"},
+        "settled_trades_this_run": {"type": "integer"},
+        "pending_trades_total": {"type": "integer"},
+        "queued_trades_total": {"type": "integer"},
+        "settled_trades_total": {"type": "integer"},
+        "skipped_trades_total": {"type": "integer"},
+        "liquidity_capped_trades_this_run": {"type": "integer"},
+        "liquidity_blocked_trades_this_run": {"type": "integer"},
+        "avg_participation_rate": {"type": "number"},
+        "avg_round_trip_cost_bps": {"type": "number"}
+      }
+    },
+    "execution_diagnostics": {
+      "type": "object",
+      "properties": {
+        "intended_trades": {"type": "integer"},
+        "attempted_trades": {"type": "integer"},
+        "filled_trades": {"type": "integer"},
+        "partial_fills": {"type": "integer"},
+        "missed_trades": {"type": "integer"},
+        "fill_rate": {"type": "number"},
+        "partial_fill_rate": {"type": "number"},
+        "missed_trade_rate": {"type": "number"},
+        "realized_vs_intended_exposure": {"type": "number"},
+        "execution_cost_drag": {"type": "number"},
+        "execution_cost_drag_bps": {"type": "number"},
+        "gap_slippage_bps": {"type": "number"}
+      }
+    },
+    "trades": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "trade_id": {"type": "string", "format": "uuid"},
+          "ticker": {"type": "string"},
+          "direction": {"type": "string"},
+          "confidence": {"type": "string"},
+          "prob_up": {"type": "number"},
+          "prob_down": {"type": "number"},
+          "prob_flat": {"type": "number"},
+          "expected_return": {"type": ["number", "null"]},
+          "expected_trade_return": {"type": ["number", "null"]},
+          "expected_net_return": {"type": ["number", "null"]},
+          "predicted_volatility": {"type": ["number", "null"]},
+          "stale_data_flag": {"type": "boolean"},
+          "signal_time": {"type": ["string", "null"], "format": "date-time"},
+          "execution_time": {"type": ["string", "null"], "format": "date-time"},
+          "signal_reference_price": {"type": ["number", "null"]},
+          "execution_price": {"type": ["number", "null"]},
+          "status": {"type": "string"},
+          "target_notional": {"type": ["number", "null"]},
+          "executed_notional": {"type": ["number", "null"]},
+          "intended_order_quantity": {"type": ["number", "null"]},
+          "filled_quantity": {"type": ["number", "null"]},
+          "unfilled_quantity": {"type": ["number", "null"]},
+          "unfilled_notional": {"type": ["number", "null"]},
+          "fillable_notional_cap": {"type": ["number", "null"]},
+          "adv_dollar_volume": {"type": ["number", "null"]},
+          "participation_rate": {"type": "number"},
+          "fill_rate": {"type": "number"},
+          "partial_fill": {"type": "boolean"},
+          "missed_trade": {"type": "boolean"},
+          "liquidity_capped": {"type": "boolean"},
+          "liquidity_blocked": {"type": "boolean"},
+          "round_trip_cost_bps": {"type": "number"},
+          "gap_slippage_bps": {"type": "number"},
+          "execution_cost_drag": {"type": "number"},
+          "execution_reason": {"type": "string"}
+        }
+      }
+    }
+  }
+}

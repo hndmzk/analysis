@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ForecastOutput",
+  "type": "object",
+  "required": ["forecast_id", "generated_at", "model_version", "horizon", "predictions"],
+  "properties": {
+    "forecast_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "model_version": {
+      "type": "string",
+      "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "horizon": {
+      "type": "string",
+      "enum": ["1d", "5d", "20d", "event"]
+    },
+    "regime": {
+      "type": "string",
+      "enum": ["low_vol", "high_vol", "transition", "unknown"]
+    },
+    "predictions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["ticker", "direction", "probabilities", "confidence", "stale_data_flag"],
+        "properties": {
+          "ticker": {"type": "string"},
+          "direction": {
+            "type": "string",
+            "enum": ["UP", "DOWN", "FLAT"]
+          },
+          "probabilities": {
+            "type": "object",
+            "required": ["UP", "DOWN", "FLAT"],
+            "properties": {
+              "UP": {"type": "number", "minimum": 0, "maximum": 1},
+              "DOWN": {"type": "number", "minimum": 0, "maximum": 1},
+              "FLAT": {"type": "number", "minimum": 0, "maximum": 1}
+            }
+          },
+          "expected_return": {
+            "type": ["number", "null"]
+          },
+          "predicted_volatility": {
+            "type": ["number", "null"]
+          },
+          "confidence": {
+            "type": "string",
+            "enum": ["high", "medium", "low"]
+          },
+          "top_features": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {"type": "string"},
+                "shap_value": {"type": "number"}
+              }
+            },
+            "maxItems": 5
+          },
+          "stale_data_flag": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}
+

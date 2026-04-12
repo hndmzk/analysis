@@ -1,0 +1,459 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BacktestResult",
+  "type": "object",
+  "required": ["backtest_id", "config", "completed_at", "folds", "aggregate_metrics", "cost_adjusted_metrics"],
+  "properties": {
+    "backtest_id": {"type": "string", "format": "uuid"},
+    "config": {
+      "type": "object",
+      "required": ["model_name", "model_version", "start_date", "end_date", "horizon", "initial_train_days", "eval_days", "embargo_days"],
+      "properties": {
+        "model_name": {"type": "string"},
+        "model_version": {"type": "string"},
+        "start_date": {"type": "string", "format": "date"},
+        "end_date": {"type": "string", "format": "date"},
+        "horizon": {"type": "string"},
+        "initial_train_days": {"type": "integer"},
+        "eval_days": {"type": "integer"},
+        "embargo_days": {"type": "integer"},
+        "feature_version": {"type": "string"},
+        "universe": {"type": "string"},
+        "dummy_mode": {"type": ["string", "null"]},
+        "portfolio_rule": {
+          "type": "object",
+          "properties": {
+            "strategy_name": {"type": "string"},
+            "probability_threshold": {"type": "number"},
+            "top_bucket_fraction": {"type": "number"},
+            "bottom_bucket_fraction": {"type": "number"},
+            "holding_days": {"type": "integer"},
+            "min_edge": {"type": "number"},
+            "bucket_hysteresis": {"type": "number"},
+            "hysteresis_edge_buffer": {"type": "number"},
+            "reentry_cooldown_days": {"type": "integer"},
+            "max_turnover_per_day": {"type": "number"},
+            "participation_volume_floor": {"type": "number"},
+            "participation_volume_ceiling": {"type": "number"}
+          }
+        }
+      }
+    },
+    "completed_at": {"type": "string", "format": "date-time"},
+    "folds": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["fold_id", "train_start", "train_end", "eval_start", "eval_end", "metrics"],
+        "properties": {
+          "fold_id": {"type": "integer"},
+          "train_start": {"type": "string", "format": "date"},
+          "train_end": {"type": "string", "format": "date"},
+          "eval_start": {"type": "string", "format": "date"},
+          "eval_end": {"type": "string", "format": "date"},
+          "n_train": {"type": "integer"},
+          "n_eval": {"type": "integer"},
+          "metrics": {
+            "type": "object",
+            "properties": {
+              "hit_rate": {"type": "number"},
+              "log_loss": {"type": "number"},
+              "brier_score": {"type": "number"},
+              "ece": {"type": "number"},
+              "calibration_gap": {"type": "number"},
+              "ic": {"type": "number"},
+              "rank_ic": {"type": "number"},
+              "return_ic": {"type": "number"},
+              "return_rank_ic": {"type": "number"},
+              "return_mae": {"type": "number"},
+              "return_rmse": {"type": "number"},
+              "vol_mae": {"type": "number"},
+              "vol_mape": {"type": "number"},
+              "vol_rmse": {"type": "number"}
+            }
+          },
+          "calibration": {
+            "type": "object",
+            "properties": {
+              "enabled": {"type": "boolean"},
+              "method": {"type": "string"},
+              "samples": {"type": "integer"},
+              "calibration_start": {"type": ["string", "null"], "format": "date"},
+              "calibration_end": {"type": ["string", "null"], "format": "date"}
+            }
+          },
+          "feature_importance": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "feature": {"type": "string"},
+                "mean_abs_shap": {"type": "number"},
+                "feature_family": {"type": ["string", "null"]},
+                "data_source": {"type": ["string", "null"]},
+                "missing_rate": {"type": ["number", "null"]},
+                "stale_rate": {"type": ["number", "null"]}
+              }
+            }
+          }
+        }
+      }
+    },
+    "aggregate_metrics": {
+      "type": "object",
+      "properties": {
+        "hit_rate_mean": {"type": "number"},
+        "hit_rate_std": {"type": "number"},
+        "log_loss_mean": {"type": "number"},
+        "brier_score_mean": {"type": "number"},
+        "ece_mean": {"type": "number"},
+        "calibration_gap_mean": {"type": "number"},
+        "ic_mean": {"type": "number"},
+        "rank_ic_mean": {"type": "number"},
+        "return_ic_mean": {"type": "number"},
+        "return_rank_ic_mean": {"type": "number"},
+        "return_mae_mean": {"type": "number"},
+        "return_rmse_mean": {"type": "number"},
+        "vol_mae_mean": {"type": "number"},
+        "vol_mape_mean": {"type": "number"},
+        "vol_rmse_mean": {"type": "number"},
+        "ece_warning_breach_count": {"type": "integer"},
+        "ece_warning_breach_ratio": {"type": "number"},
+        "calibration_gap_warning_breach_count": {"type": "integer"},
+        "calibration_gap_warning_breach_ratio": {"type": "number"}
+      }
+    },
+    "cost_adjusted_metrics": {
+      "type": "object",
+      "properties": {
+        "information_ratio": {"type": "number"},
+        "sharpe_ratio": {"type": "number"},
+        "sortino_ratio": {"type": "number"},
+        "max_drawdown": {"type": "number"},
+        "calmar_ratio": {"type": "number"},
+        "annual_return": {"type": "number"},
+        "gross_annual_return": {"type": "number"},
+        "annual_volatility": {"type": "number"},
+        "avg_daily_turnover": {"type": "number"},
+        "total_cost_bps": {"type": "number"},
+        "active_days_ratio": {"type": "number"},
+        "signal_days_ratio": {"type": "number"},
+        "two_sided_signal_days_ratio": {"type": "number"},
+        "one_sided_signal_days_ratio": {"type": "number"},
+        "avg_gross_exposure": {"type": "number"},
+        "avg_selected_names": {"type": "number"},
+        "selection_stability": {"type": "number"},
+        "cost_drag_annual_return": {"type": "number"},
+        "gross_information_ratio": {"type": "number"},
+        "gross_positive_day_ratio": {"type": "number"},
+        "net_positive_day_ratio": {"type": "number"},
+        "rebalance_thinned_days_ratio": {"type": "number"},
+        "avg_liquidity_multiplier": {"type": "number"},
+        "avg_target_turnover": {"type": "number"}
+      }
+    },
+    "portfolio_rule_analysis": {
+      "type": "object",
+      "properties": {
+        "classification_hit_rate_mean": {"type": "number"},
+        "selected_rule": {"type": "object"},
+        "uncontrolled_selected_rule": {"type": "object"},
+        "control_effect": {"type": "object"},
+        "legacy_two_sided_rule": {"type": "object"},
+        "best_cpcv_candidate": {"type": "object"},
+        "candidate_family_summary": {"type": "object"},
+        "primary_reasons": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "pbo": {
+      "type": ["number", "null"]
+    },
+    "cpcv": {
+      "type": "object",
+      "properties": {
+        "splits": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "split_id": {"type": "integer"},
+              "train_start": {"type": "string", "format": "date"},
+              "train_end": {"type": "string", "format": "date"},
+              "test_start": {"type": "string", "format": "date"},
+              "test_end": {"type": "string", "format": "date"},
+              "n_train": {"type": "integer"},
+              "n_test": {"type": "integer"},
+              "best_candidate_oos_rank_percentile": {"type": "number"},
+              "best_candidate_logit_omega": {"type": "number"},
+              "best_candidate_test_information_ratio": {"type": "number"},
+              "best_candidate_test_active_days_ratio": {"type": "number"},
+              "best_candidate_test_selection_stability": {"type": "number"}
+            }
+          }
+        },
+        "aggregate_metrics": {"type": "object"},
+        "candidate_strategies": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {"type": "string"},
+              "strategy_name": {"type": "string"},
+              "probability_threshold": {"type": ["number", "null"]},
+              "top_bucket_fraction": {"type": "number"},
+              "bottom_bucket_fraction": {"type": "number"},
+              "holding_days": {"type": "integer"},
+              "mean_oos_information_ratio": {"type": "number"},
+              "mean_oos_gross_information_ratio": {"type": "number"},
+              "mean_oos_annual_return": {"type": "number"},
+              "mean_oos_gross_annual_return": {"type": "number"},
+              "mean_oos_cost_drag_annual_return": {"type": "number"},
+              "mean_oos_active_days_ratio": {"type": "number"},
+              "mean_oos_signal_days_ratio": {"type": "number"},
+              "mean_oos_avg_daily_turnover": {"type": "number"},
+              "mean_oos_total_cost_bps": {"type": "number"},
+              "mean_oos_selection_stability": {"type": "number"},
+              "mean_oos_two_sided_signal_days_ratio": {"type": "number"},
+              "mean_oos_one_sided_signal_days_ratio": {"type": "number"},
+              "mean_oos_rebalance_thinned_days_ratio": {"type": "number"},
+              "mean_oos_avg_target_turnover": {"type": "number"}
+            }
+          }
+        },
+        "cluster_candidate_strategies": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "cluster_name": {"type": "string"},
+              "strategy_name": {"type": "string"},
+              "threshold_cluster_key": {"type": "string"},
+              "bucket_cluster_key": {"type": "string"},
+              "holding_days_cluster_key": {"type": "string"},
+              "member_count": {"type": "integer"},
+              "member_names": {"type": "array", "items": {"type": "string"}},
+              "mean_oos_information_ratio": {"type": "number"},
+              "mean_oos_gross_information_ratio": {"type": "number"},
+              "mean_oos_annual_return": {"type": "number"},
+              "mean_oos_cost_drag_annual_return": {"type": "number"},
+              "mean_oos_active_days_ratio": {"type": "number"},
+              "mean_oos_selection_stability": {"type": "number"}
+            }
+          }
+        },
+        "portfolio_rule_summary": {"type": "object"},
+        "cluster_adjusted_splits": {"type": "array", "items": {"type": "object"}},
+        "cluster_adjusted_pbo": {"type": ["number", "null"]},
+        "cluster_adjusted_pbo_summary": {"type": "object"},
+        "cluster_adjusted_pbo_diagnostics": {"type": "object"},
+        "pbo_summary": {
+          "type": "object",
+          "properties": {
+            "definition": {"type": "string"},
+            "label": {"type": "string"},
+            "detail": {"type": "string"},
+            "thresholds": {"type": "object"}
+          }
+        }
+      }
+    },
+    "feature_importance_summary": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "feature": {"type": "string"},
+          "mean_abs_shap": {"type": "number"},
+          "feature_family": {"type": ["string", "null"]},
+          "data_source": {"type": ["string", "null"]},
+          "missing_rate": {"type": ["number", "null"]},
+          "stale_rate": {"type": ["number", "null"]}
+        }
+      }
+    },
+    "feature_catalog": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "feature": {"type": "string"},
+          "feature_family": {"type": "string"},
+          "data_source": {"type": "string"},
+          "domain": {"type": "string"},
+          "missing_rate": {"type": "number"},
+          "stale_rate": {"type": "number"}
+        }
+      }
+    },
+    "feature_family_importance_summary": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "feature_family": {"type": "string"},
+          "feature_count": {"type": "integer"},
+          "mean_abs_shap": {"type": "number"},
+          "mean_missing_rate": {"type": "number"},
+          "mean_stale_rate": {"type": "number"},
+          "data_sources": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "model_comparison": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "model_name": {"type": "string"},
+          "model_version": {"type": "string"},
+          "status": {"type": "string", "enum": ["completed", "error"]},
+          "error": {"type": "string"},
+          "aggregate_metrics": {"type": "object"},
+          "cost_adjusted_metrics": {"type": "object"},
+          "diebold_mariano": {"type": "object"},
+          "comparison_to_primary": {"type": "object"}
+        }
+      }
+    },
+    "drift_monitor": {
+      "type": "object",
+      "properties": {
+        "bucket_count": {"type": "integer"},
+        "warning_threshold": {"type": "number"},
+        "critical_threshold": {"type": "number"},
+        "max_psi": {"type": "number"},
+        "mean_psi": {"type": "number"},
+        "max_raw_psi": {"type": "number"},
+        "mean_raw_psi": {"type": "number"},
+        "stable_feature_ratio": {"type": "number"},
+        "warning_features": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "critical_features": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "family_thresholds": {
+          "type": "object"
+        },
+        "feature_groups": {
+          "type": "array",
+          "items": {"type": "object"}
+        },
+        "supplementary_analysis": {
+          "type": "object",
+          "properties": {
+            "primary_cause": {"type": "string"},
+            "proxy_ohlcv_used": {"type": "boolean"},
+            "regime_active": {"type": "boolean"},
+            "current_regime": {"type": "string"},
+            "regime_shift_flag": {"type": "boolean"},
+            "state_probability": {"type": "number"},
+            "proxy_sensitive_flagged_features": {"type": "array", "items": {"type": "string"}},
+            "non_proxy_flagged_features": {"type": "array", "items": {"type": "string"}},
+            "macro_volatility_flagged_features": {"type": "array", "items": {"type": "string"}},
+            "raw_to_adjusted_reduction_mean": {"type": "number"},
+            "feature_diagnostics": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "feature": {"type": "string"},
+                  "raw_psi": {"type": "number"},
+                  "adjusted_psi": {"type": "number"},
+                  "family": {"type": "string"},
+                  "proxy_sensitive": {"type": "boolean"},
+                  "data_source": {"type": ["string", "null"]},
+                  "missing_rate": {"type": ["number", "null"]},
+                  "stale_rate": {"type": ["number", "null"]},
+                  "primary_cause": {"type": "string"},
+                  "retrain_action": {"type": "string", "enum": ["ignore", "watch", "trigger"]},
+                  "status": {"type": "string", "enum": ["PASS", "WARNING", "FAIL"]}
+                }
+              }
+            },
+            "notes": {"type": "array", "items": {"type": "string"}}
+          }
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "feature": {"type": "string"},
+              "feature_family": {"type": "string"},
+              "data_source": {"type": ["string", "null"]},
+              "missing_rate": {"type": ["number", "null"]},
+              "stale_rate": {"type": ["number", "null"]},
+              "warning_threshold": {"type": "number"},
+              "critical_threshold": {"type": "number"},
+              "proxy_sensitive": {"type": "boolean"},
+              "raw_psi": {"type": "number"},
+              "psi": {"type": "number"},
+              "stability_transform": {"type": "string"},
+              "stability_reduction": {"type": "number"},
+              "mean_shift_sigma": {"type": "number"},
+              "analysis_tag": {"type": "string"},
+              "primary_cause": {"type": "string"},
+              "retrain_action": {"type": "string", "enum": ["ignore", "watch", "trigger"]},
+              "status": {"type": "string", "enum": ["PASS", "WARNING", "FAIL"]}
+            }
+          }
+        }
+      }
+    },
+    "regime_monitor": {
+      "type": "object",
+      "properties": {
+        "method": {"type": "string"},
+        "current_regime": {"type": "string"},
+        "previous_regime": {"type": "string"},
+        "dominant_recent_regime": {"type": "string"},
+        "regime_shift_flag": {"type": "boolean"},
+        "state_probability": {"type": "number"},
+        "transition_rate": {"type": "number"},
+        "reason": {"type": "string"}
+      }
+    },
+    "retraining_monitor": {
+      "type": "object",
+      "properties": {
+        "should_retrain": {"type": "boolean"},
+        "trigger_count": {"type": "integer"},
+        "triggers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {"type": "string"},
+              "status": {"type": "string"},
+              "detail": {"type": "string"}
+            }
+          }
+        },
+        "observations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {"type": "string"},
+              "status": {"type": "string"},
+              "detail": {"type": "string"}
+            }
+          }
+        },
+        "drift_signal": {"type": "object"},
+        "calibration_signal": {"type": "object"}
+      }
+    },
+    "diebold_mariano": {
+      "type": "object",
+      "properties": {
+        "vs_baseline": {"type": "string"},
+        "dm_statistic": {"type": "number"},
+        "p_value": {"type": "number"}
+      }
+    }
+  }
+}

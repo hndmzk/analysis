@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AuditReport",
+  "type": "object",
+  "required": [
+    "report_id",
+    "report_type",
+    "generated_at",
+    "section_order",
+    "source_artifacts",
+    "executive_summary",
+    "run_context",
+    "model_portfolio_performance",
+    "execution_diagnostics",
+    "drift_calibration_regime_review",
+    "retraining_decision",
+    "watch_only_findings",
+    "data_sources_transport",
+    "top_risks",
+    "recommended_next_actions",
+    "artifact_references"
+  ],
+  "properties": {
+    "report_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "report_type": {
+      "type": "string"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "section_order": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 11
+    },
+    "source_artifacts": {
+      "type": "object"
+    },
+    "executive_summary": {
+      "type": "object"
+    },
+    "run_context": {
+      "type": "object"
+    },
+    "model_portfolio_performance": {
+      "type": "object"
+    },
+    "execution_diagnostics": {
+      "type": "object"
+    },
+    "drift_calibration_regime_review": {
+      "type": "object"
+    },
+    "retraining_decision": {
+      "type": "object"
+    },
+    "watch_only_findings": {
+      "type": "object"
+    },
+    "data_sources_transport": {
+      "type": "object"
+    },
+    "top_risks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "recommended_next_actions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "artifact_references": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["label", "path"],
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

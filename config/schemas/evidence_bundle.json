@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EvidenceBundle",
+  "type": "object",
+  "required": ["bundle_id", "forecast_id", "created_at", "data_snapshot", "model_info"],
+  "properties": {
+    "bundle_id": {"type": "string", "format": "uuid"},
+    "forecast_id": {"type": "string", "format": "uuid"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "data_snapshot": {
+      "type": "object",
+      "required": ["ohlcv_as_of", "features_hash", "stale_tickers"],
+      "properties": {
+        "ohlcv_as_of": {"type": "string", "format": "date-time"},
+        "macro_as_of": {"type": "string", "format": "date-time"},
+        "news_as_of": {"type": "string", "format": "date-time"},
+        "features_hash": {"type": "string"},
+        "stale_tickers": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "ohlcv_stale_ratio": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "source_metadata": {
+          "type": "object",
+          "properties": {
+            "requested_source": {"type": "string"},
+            "used_source": {"type": "string"},
+            "dummy_mode": {"type": ["string", "null"]},
+            "fallback_used": {"type": "boolean"},
+            "fallback_reason": {"type": ["string", "null"]},
+            "as_of_time": {"type": "string", "format": "date-time"},
+            "attempt_errors": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "source": {"type": "string"},
+                  "error": {"type": "string"}
+                }
+              }
+            }
+          }
+        },
+        "drift_monitor": {
+          "type": "object",
+          "properties": {
+            "max_psi": {"type": "number"},
+            "mean_psi": {"type": "number"},
+            "max_raw_psi": {"type": "number"},
+            "mean_raw_psi": {"type": "number"},
+            "stable_feature_ratio": {"type": "number"},
+            "warning_features": {
+              "type": "array",
+              "items": {"type": "string"}
+            },
+            "critical_features": {
+              "type": "array",
+              "items": {"type": "string"}
+            },
+            "feature_groups": {"type": "array"},
+            "supplementary_analysis": {"type": "object"}
+          }
+        },
+        "regime_monitor": {
+          "type": "object",
+          "properties": {
+            "method": {"type": "string"},
+            "current_regime": {"type": "string"},
+            "previous_regime": {"type": "string"},
+            "dominant_recent_regime": {"type": "string"},
+            "regime_shift_flag": {"type": "boolean"},
+            "state_probability": {"type": "number"},
+            "transition_rate": {"type": "number"},
+            "reason": {"type": "string"}
+          }
+        }
+      }
+    },
+    "model_info": {
+      "type": "object",
+      "required": ["model_name", "model_version", "trained_at", "training_samples"],
+      "properties": {
+        "model_name": {"type": "string"},
+        "model_version": {"type": "string"},
+        "trained_at": {"type": "string", "format": "date-time"},
+        "training_samples": {"type": "integer"},
+        "hyperparameters": {"type": "object"},
+        "feature_importance_top": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "feature": {"type": "string"},
+              "mean_abs_shap": {"type": "number"}
+            }
+          }
+        },
+        "calibration_summary": {"type": "object"},
+        "retraining_monitor": {"type": "object"}
+      }
+    },
+    "news_summary": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "headline": {"type": "string"},
+          "source": {"type": "string"},
+          "published_at": {"type": "string", "format": "date-time"},
+          "sentiment_score": {"type": "number", "minimum": -1, "maximum": 1},
+          "relevance_score": {"type": "number", "minimum": 0, "maximum": 1}
+        }
+      },
+      "maxItems": 20
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RetrainingEvent",
+  "type": "object",
+  "required": ["event_id", "forecast_id", "created_at", "week_id", "trigger_count", "triggers", "action"],
+  "properties": {
+    "event_id": {"type": "string", "format": "uuid"},
+    "forecast_id": {"type": "string", "format": "uuid"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "week_id": {"type": "string"},
+    "approval": {"type": "string"},
+    "regime": {"type": "string"},
+    "max_psi": {"type": "number"},
+    "ece_mean": {"type": "number"},
+    "pbo": {"type": ["number", "null"]},
+    "pbo_label": {"type": ["string", "null"]},
+    "trigger_count": {"type": "integer"},
+    "triggers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {"type": "string"},
+          "status": {"type": "string"},
+          "detail": {"type": "string"}
+        }
+      }
+    },
+    "action": {"type": "string"}
+  }
+}

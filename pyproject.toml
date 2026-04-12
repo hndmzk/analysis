@@ -1,0 +1,74 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "market-prediction-agent"
+version = "0.1.0"
+description = "Minimal market analysis and forecasting system MVP"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "hmmlearn>=0.3.3",
+  "lightgbm>=4.6.0",
+  "lxml>=5.3.0",
+  "numpy>=2.3.0",
+  "pandas>=3.0.0",
+  "pydantic>=2.11.0",
+  "pyarrow>=23.0.0",
+  "jsonschema>=4.26.0",
+  "PyYAML>=6.0.0",
+  "scikit-learn>=1.7.0",
+  "xgboost>=3.1.3",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=9.0.0",
+  "pytest-cov>=7.0.0",
+  "ruff>=0.11.13",
+  "mypy>=1.18.2",
+  "types-PyYAML>=6.0.12",
+]
+ml-extra = [
+  "torch>=2.0",
+]
+
+[dependency-groups]
+dev = [
+  "pytest>=9.0.0",
+  "pytest-cov>=7.0.0",
+  "ruff>=0.11.13",
+  "mypy>=1.18.2",
+  "types-PyYAML>=6.0.12",
+]
+
+[tool.uv]
+default-groups = ["dev"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-p no:cacheprovider -p no:tmpdir"
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+extend-exclude = ["*.ps1"]
+
+[tool.ruff.lint]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+namespace_packages = true
+explicit_package_bases = true
+mypy_path = ["src"]
+packages = ["market_prediction_agent"]
+plugins = ["pydantic.mypy"]

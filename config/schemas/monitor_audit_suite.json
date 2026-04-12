@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MonitorAuditSuite",
+  "type": "object",
+  "required": ["suite_id", "generated_at", "dataset_type", "as_of_dates", "ticker_sets", "run_count", "runs", "distribution_summary"],
+  "properties": {
+    "suite_id": {"type": "string", "format": "uuid"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "dataset_type": {"type": "string"},
+    "profile_name": {"type": ["string", "null"]},
+    "profile_role": {"type": ["string", "null"]},
+    "analysis_mode": {"type": ["string", "null"]},
+    "source_suite_id": {"type": ["string", "null"]},
+    "source_suite_path": {"type": ["string", "null"]},
+    "as_of_dates": {
+      "type": "array",
+      "items": {"type": "string", "format": "date"}
+    },
+    "ticker_sets": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {"type": "string"}
+      }
+    },
+    "run_count": {"type": "integer"},
+    "cpcv_max_splits": {"type": "integer"},
+    "runs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["audit_id", "backtest_id", "as_of_date", "ticker_set", "information_ratio", "pbo", "selection_stability", "should_retrain"],
+        "properties": {
+          "audit_id": {"type": "string", "format": "uuid"},
+          "backtest_id": {"type": "string", "format": "uuid"},
+          "as_of_date": {"type": "string", "format": "date"},
+          "ticker_set": {"type": "string"},
+          "information_ratio": {"type": "number"},
+          "pbo": {"type": "number"},
+          "pbo_label": {"type": ["string", "null"]},
+          "cluster_adjusted_pbo": {"type": "number"},
+          "cluster_adjusted_pbo_label": {"type": ["string", "null"]},
+          "candidate_pbo_competition_dominated": {"type": "boolean"},
+          "pbo_competition_dominated": {"type": "boolean"},
+          "candidate_pbo_dominant_axis": {"type": "string"},
+          "pbo_dominant_axis": {"type": "string"},
+          "candidate_pbo_dominant_value": {"type": "string"},
+          "pbo_dominant_value": {"type": "string"},
+          "candidate_pbo_close_competition_ratio": {"type": "number"},
+          "pbo_close_competition_ratio": {"type": "number"},
+          "selection_stability": {"type": "number"},
+          "hit_rate_mean": {"type": "number"},
+          "current_regime": {"type": "string"},
+          "dominant_recent_regime": {"type": "string"},
+          "regime_shift_flag": {"type": "boolean"},
+          "state_probability": {"type": "number"},
+          "transition_rate": {"type": "number"},
+          "ohlcv_source": {"type": "string"},
+          "macro_source": {"type": "string"},
+          "ohlcv_transport_origin": {"type": "string"},
+          "macro_transport_origin": {"type": "string"},
+          "transition_profile": {"type": "string"},
+          "transition_history_matches": {"type": "integer"},
+          "transition_observation_count": {"type": "integer"},
+          "transition_span_business_days": {"type": "integer"},
+          "transition_persistent": {"type": "boolean"},
+          "stable_transition": {"type": "boolean"},
+          "unstable_transition": {"type": "boolean"},
+          "immediate_transition": {"type": "boolean"},
+          "state_probability_bucket": {"type": "string"},
+          "transition_rate_bucket": {"type": "string"},
+          "drift_weighted_score": {"type": "number"},
+          "drift_pre_suppression_weighted_score": {"type": "number"},
+          "drift_weighted_threshold": {"type": "number"},
+          "drift_low_vol_threshold": {"type": "number"},
+          "drift_immediate_threshold": {"type": "number"},
+          "drift_trigger_feature_count": {"type": "integer"},
+          "drift_trigger_family_count": {"type": "integer"},
+          "drift_pre_suppression_trigger_feature_count": {"type": "integer"},
+          "drift_pre_suppression_trigger_family_count": {"type": "integer"},
+          "drift_trigger_families": {"type": "array", "items": {"type": "string"}},
+          "drift_pre_suppression_trigger_families": {"type": "array", "items": {"type": "string"}},
+          "drift_proxy_sensitive_profile": {"type": "string"},
+          "drift_proxy_sensitive_trigger_feature_count": {"type": "integer"},
+          "drift_non_proxy_trigger_feature_count": {"type": "integer"},
+          "drift_pre_suppression_proxy_sensitive_trigger_feature_count": {"type": "integer"},
+          "drift_pre_suppression_non_proxy_trigger_feature_count": {"type": "integer"},
+          "drift_history_matches": {"type": "integer"},
+          "drift_span_business_days": {"type": "integer"},
+          "drift_suppressed_families": {"type": "array", "items": {"type": "string"}},
+          "drift_stable_transition_suppressed_families": {"type": "array", "items": {"type": "string"}},
+          "drift_primary_cause": {"type": "string"},
+          "drift_family_persistence_would_suppress": {"type": "boolean"},
+          "drift_family_persistence_counterfactual_score": {"type": "number"},
+          "drift_threshold_delta_to_suppress": {"type": "number"},
+          "drift_low_vol_threshold_would_suppress": {"type": "boolean"},
+          "drift_stable_transition_suppression_would_suppress": {"type": "boolean"},
+          "drift_stable_transition_counterfactual_score": {"type": "number"},
+          "ece_fold_persistent": {"type": "boolean"},
+          "calibration_gap_fold_persistent": {"type": "boolean"},
+          "ece_run_persistent": {"type": "boolean"},
+          "calibration_gap_run_persistent": {"type": "boolean"},
+          "ece_history_matches": {"type": "integer"},
+          "calibration_gap_history_matches": {"type": "integer"},
+          "ece_observation_count": {"type": "integer"},
+          "calibration_gap_observation_count": {"type": "integer"},
+          "ece_span_business_days": {"type": "integer"},
+          "calibration_gap_span_business_days": {"type": "integer"},
+          "base_should_retrain": {"type": "boolean"},
+          "should_retrain": {"type": "boolean"},
+          "policy_decision": {"type": "string"},
+          "base_trigger_names": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "trigger_names": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "suppressed_trigger_names": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "policy_notes": {
+            "type": "array",
+            "items": {"type": "string"}
+          }
+        }
+      }
+    },
+    "distribution_summary": {
+      "type": "object",
+      "properties": {
+        "information_ratio": {"type": "object"},
+        "pbo": {"type": "object"},
+        "cluster_adjusted_pbo": {"type": "object"},
+        "selection_stability": {"type": "object"},
+        "base_retraining_rate": {"type": "number"},
+        "retraining_rate": {"type": "number"},
+        "base_trigger_counts": {"type": "object"},
+        "effective_trigger_counts": {"type": "object"},
+        "policy_decision_counts": {"type": "object"},
+        "pbo_competition_dominated_rate": {"type": "number"},
+        "candidate_pbo_competition_dominated_rate": {"type": "number"},
+        "pbo_dominant_axis_counts": {"type": "object"},
+        "candidate_pbo_dominant_axis_counts": {"type": "object"},
+        "drift_dominated_analysis": {"type": "object"},
+        "regime_dominated_analysis": {"type": "object"},
+        "calibration_dominated_analysis": {"type": "object"}
+      }
+    },
+    "by_ticker_set": {
+      "type": "array",
+      "items": {"type": "object"}
+    },
+    "by_as_of_date": {
+      "type": "array",
+      "items": {"type": "object"}
+    },
+    "comparison_to_source": {
+      "type": "object"
+    }
+  }
+}

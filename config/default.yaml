@@ -1,0 +1,321 @@
+app:
+  name: market-prediction-agent
+  version: "0.1.0"
+  seed: 42
+  log_level: INFO
+
+data:
+  source_mode: dummy
+  dummy_mode: null_random_walk
+  primary_source: polygon
+  fallback_source: alphavantage
+  crypto_source: coingecko
+  crypto_tickers:
+    - BTC-USD
+    - ETH-USD
+  crypto_enabled: false
+  jp_equity:
+    enabled: false
+    universe: topix_core30
+    source: stooq
+    tickers_file: config/topix_core30.json
+  macro_source: auto
+  news_source: yahoo_finance_rss
+  news_secondary_sources:
+    - google_news_rss
+  news_fallback_source: offline_news_proxy
+  news_source_weights:
+    yahoo_finance_rss: 0.85
+    google_news_rss: 1.05
+    offline_news_proxy: 0.60
+  news_session_weights:
+    pre_market: 1.00
+    regular: 0.85
+    post_market: 0.90
+    weekend_shifted: 0.70
+    mixed: 1.10
+    unknown: 1.00
+    none: 0.00
+  news_weighting_mode: fixed
+  learned_weighting:
+    regularization_lambda: 60
+    min_samples: 20
+    lookback_days: 504
+    target: combined
+    min_weight: 0.05
+    fallback_mode: fixed
+  fundamentals_source: sec_companyfacts
+  fundamentals_fallback_source: offline_fundamental_proxy
+  sector_source: static_sector_map
+  universe: synthetic-sp500
+  default_tickers:
+    - SPY
+    - QQQ
+    - DIA
+    - GLD
+  storage_path: ./storage
+  ohlcv_granularity: daily
+  forecast_horizon: 1d
+  horizon_days: 1
+  dummy_ticker_count: 100
+  dummy_days: 1300
+  stale_threshold_hours:
+    ohlcv: 2
+    macro: 48
+    news: 6
+    fundamentals: 168
+    sector: 48
+  public_data:
+    cache_path: ./storage/public_data/cache
+    snapshot_path: ./storage/public_data/snapshots
+    cache_ttl_hours: 24
+    retry_count: 2
+    retry_backoff_seconds: 1.0
+  macro_series:
+    - FEDFUNDS
+    - T10Y2Y
+    - VIXCLS
+    - CPIAUCSL
+    - UNRATE
+
+model:
+  primary: lightgbm_multiclass_calibrated
+  comparison_models: []
+  version: "v0.1.0"
+  feature_version: "v0.1.0"
+  direction_threshold: 0.005
+  ridge_alpha: 1.0
+  portfolio_rule:
+    strategy_name: classified_directional
+    probability_threshold: 0.35
+    top_bucket_fraction: 0.25
+    bottom_bucket_fraction: 0.25
+    holding_days: 5
+    min_edge: 0.02
+    bucket_hysteresis: 0.0
+    hysteresis_edge_buffer: 0.01
+    reentry_cooldown_days: 2
+    max_turnover_per_day: 0.06
+    participation_volume_floor: 0.75
+    participation_volume_ceiling: 1.25
+  calibration:
+    method: multinomial_logistic
+    fraction: 0.2
+    min_days: 63
+    ece_warning: 0.05
+    calibration_gap_warning: 0.05
+  lightgbm:
+    n_estimators: 200
+    learning_rate: 0.05
+    num_leaves: 31
+    min_child_samples: 100
+    feature_fraction: 0.8
+    bagging_fraction: 0.8
+    bagging_freq: 1
+    reg_lambda: 1.0
+    max_shap_samples: 2000
+  xgboost:
+    n_estimators: 200
+    learning_rate: 0.05
+    max_depth: 6
+    min_child_weight: 2.0
+    subsample: 0.8
+    colsample_bytree: 0.8
+    reg_lambda: 1.0
+    max_shap_samples: 2000
+  lstm:
+    hidden_size: 64
+    num_layers: 2
+    dropout: 0.2
+    sequence_length: 20
+    max_epochs: 50
+    batch_size: 64
+    learning_rate: 0.001
+    patience: 5
+  transformer:
+    d_model: 64
+    nhead: 4
+    num_layers: 2
+    dim_feedforward: 128
+    dropout: 0.2
+    patch_length: 5
+    sequence_length: 20
+    max_epochs: 50
+    batch_size: 64
+    learning_rate: 0.001
+    patience: 5
+  cpcv:
+    group_count: 6
+    test_groups: 2
+    max_splits: 6
+    strategy_names:
+      - classified_directional
+    portfolio_thresholds:
+      - 0.30
+      - 0.35
+    top_bucket_fractions:
+      - 0.25
+      - 0.50
+    bottom_bucket_fractions:
+      - 0.25
+      - 0.50
+    holding_days:
+      - 3
+      - 5
+    threshold_cluster_tolerance: 0.05
+    bucket_cluster_tolerance: 0.20
+    holding_days_cluster_tolerance: 2
+  hmm:
+    n_states: 3
+    min_history_days: 120
+    regime_shift_lookback_days: 20
+  retraining:
+    regime_shift_requires_retrain: true
+    transition_regime_requires_retrain: true
+    high_vol_requires_retrain: false
+    regime_shift_requires_confirmation: true
+    regime_shift_requires_drift_confirmation: true
+    regime_shift_standalone_state_probability: 0.65
+    regime_shift_standalone_transition_rate: 0.15
+    transition_regime_state_probability_threshold: 0.75
+    transition_regime_transition_rate_threshold: 0.10
+    transition_regime_unstable_state_probability_threshold: 0.55
+    transition_regime_unstable_transition_rate_threshold: 0.10
+    transition_regime_immediate_state_probability_threshold: 0.45
+    transition_regime_immediate_transition_rate_threshold: 0.15
+    transition_regime_min_persistent_runs: 3
+    transition_regime_min_persistent_span_business_days: 10
+    transition_regime_persistence_business_days: 45
+    pbo_warning: 0.6
+    pbo_min_persistent_observations: 3
+    pbo_min_persistent_span_business_days: 20
+    pbo_persistence_business_days: 45
+    pbo_immediate_threshold: 0.85
+    pbo_close_competition_margin_threshold: 0.15
+    pbo_close_competition_ratio_threshold: 0.5
+    pbo_competition_dominance_threshold: 0.6
+    drift_min_persistent_features: 2
+    drift_min_persistent_families: 2
+    drift_family_weight_threshold: 2.45
+    drift_immediate_weight_threshold: 2.95
+    calibration_min_persistent_folds: 2
+    calibration_min_fold_breach_ratio: 0.4
+    calibration_min_persistent_runs: 2
+    calibration_min_persistent_span_business_days: 10
+    calibration_persistence_business_days: 30
+    calibration_immediate_multiplier: 1.5
+    cooloff_business_days: 15
+    cause_cooloff_business_days: 30
+    cooloff_same_regime_only: true
+    cooloff_override_triggers:
+      - regime_shift
+    drift_threshold_multipliers:
+      low_vol: 1.0
+      transition: 0.9
+      high_vol: 1.4
+      unknown: 1.15
+    drift_immediate_threshold_multipliers:
+      low_vol: 1.0
+      transition: 0.95
+      high_vol: 1.25
+      unknown: 1.10
+    calibration_breach_ratio_multipliers:
+      low_vol: 1.0
+      transition: 0.9
+      high_vol: 1.15
+      unknown: 1.0
+    family_retrain_suppression:
+      low_vol: []
+      transition: []
+      high_vol:
+        - price_momentum
+        - volume
+      unknown:
+        - price_momentum
+    stable_transition_family_retrain_suppression:
+      - volume
+  walk_forward:
+    initial_train_days: 756
+    eval_days: 63
+    step_days: 63
+    embargo_days: 2
+  retrain_interval_days: 63
+
+risk:
+  psi_warning: 0.20
+  psi_critical: 0.25
+  max_drawdown_limit: 0.15
+  vix_stress_threshold: 25
+  vix_extreme_threshold: 35
+  drift:
+    bucket_count: 10
+    price_momentum:
+      warning: 0.20
+      critical: 0.25
+    volatility:
+      warning: 0.25
+      critical: 0.35
+    volume:
+      warning: 0.25
+      critical: 0.35
+    macro:
+      warning: 0.30
+      critical: 0.45
+    calendar:
+      warning: 1.00
+      critical: 1.00
+    proxy_sensitive_features:
+      - garman_klass_vol
+      - atr_14
+      - atr_ratio
+      - bb_width
+      - volume_ratio_5d
+      - volume_ratio_20d
+      - obv_slope_10d
+    family_trigger_weights:
+      price_momentum: 0.4
+      volatility: 0.75
+      volume: 0.5
+      macro: 1.0
+      calendar: 0.0
+
+trading:
+  enable_live_trading: false
+  max_position_pct: 0.05
+  max_daily_orders: 50
+  paper_capital: 1000000
+  execution_delay_business_days: 1
+  execution_time_utc: "14:30:00"
+  adv_lookback_days: 20
+  min_trade_notional: 1000
+  min_daily_dollar_volume: 5000000
+  max_participation_rate: 0.01
+  cost_bps:
+    equity_oneway: 5
+    crypto_oneway: 10
+  slippage_bps:
+    equity_oneway: 5
+    crypto_oneway: 15
+
+execution:
+  enabled: false
+  market_impact:
+    eta: 0.142
+    gamma: 0.314
+    max_participation_rate: 0.01
+  order_types:
+    - market
+    - limit
+    - twap
+  twap_slices: 10
+  twap_interval_minutes: 5
+
+api_keys:
+  polygon: ${POLYGON_API_KEY}
+  alphavantage: ${ALPHAVANTAGE_API_KEY}
+  fred: ${FRED_API_KEY}
+  finnhub: ${FINNHUB_API_KEY}
+  coingecko: ${COINGECKO_API_KEY}
+  binance_key: ${BINANCE_API_KEY}
+  binance_secret: ${BINANCE_API_SECRET}
+  anthropic: ${ANTHROPIC_API_KEY}

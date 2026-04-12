@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "WeeklyReview",
+  "type": "object",
+  "required": ["review_id", "week_id", "generated_at", "window_start", "window_end", "summary", "metrics", "execution_diagnostics"],
+  "properties": {
+    "review_id": {"type": "string", "format": "uuid"},
+    "week_id": {"type": "string"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "window_start": {"type": "string", "format": "date"},
+    "window_end": {"type": "string", "format": "date"},
+    "summary": {"type": "string"},
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "total_trades": {"type": "integer"},
+        "settled_trades": {"type": "integer"},
+        "pending_trades": {"type": "integer"},
+        "queued_trades": {"type": "integer"},
+        "skipped_trades": {"type": "integer"},
+        "hit_rate": {"type": ["number", "null"]},
+        "avg_realized_return": {"type": ["number", "null"]},
+        "avg_gross_trade_return": {"type": ["number", "null"]},
+        "avg_net_trade_return": {"type": ["number", "null"]},
+        "avg_expected_return": {"type": ["number", "null"]},
+        "avg_expected_net_return": {"type": ["number", "null"]},
+        "avg_round_trip_cost_bps": {"type": "number"},
+        "avg_participation_rate": {"type": "number"},
+        "liquidity_capped_trades": {"type": "integer"},
+        "liquidity_blocked_trades": {"type": "integer"},
+        "retraining_batches": {"type": "integer"}
+      }
+    },
+    "execution_diagnostics": {
+      "type": "object",
+      "properties": {
+        "intended_trades": {"type": "integer"},
+        "attempted_trades": {"type": "integer"},
+        "filled_trades": {"type": "integer"},
+        "partial_fills": {"type": "integer"},
+        "missed_trades": {"type": "integer"},
+        "fill_rate": {"type": "number"},
+        "partial_fill_rate": {"type": "number"},
+        "missed_trade_rate": {"type": "number"},
+        "realized_vs_intended_exposure": {"type": "number"},
+        "execution_cost_drag": {"type": "number"},
+        "execution_cost_drag_bps": {"type": "number"},
+        "gap_slippage_bps": {"type": "number"}
+      }
+    },
+    "approval_breakdown": {"type": "object"}
+  }
+}

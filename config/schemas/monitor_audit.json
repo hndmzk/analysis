@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MonitorAudit",
+  "type": "object",
+  "required": ["audit_id", "dataset_type", "generated_at", "window", "data_sources", "universe", "backtest", "drift_monitor", "regime_monitor", "retraining_monitor"],
+  "properties": {
+    "audit_id": {"type": "string", "format": "uuid"},
+    "dataset_type": {"type": "string", "enum": ["synthetic", "public_real_market"]},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "window": {
+      "type": "object",
+      "properties": {
+        "start_date": {"type": "string", "format": "date"},
+        "end_date": {"type": "string", "format": "date"},
+        "horizon": {"type": "string"}
+      }
+    },
+    "data_sources": {
+      "type": "object",
+      "properties": {
+        "source_mode": {"type": "string"},
+        "ohlcv_source": {"type": ["string", "null"]},
+        "proxy_ohlcv_used": {"type": ["boolean", "null"]},
+        "macro_source": {"type": ["string", "null"]},
+        "feature_sources": {"type": "object"},
+        "fallback_used": {"type": ["boolean", "null"]},
+        "fallback_reason": {"type": ["string", "null"]},
+        "dummy_mode": {"type": ["string", "null"]},
+        "ohlcv_transport": {"type": "object"},
+        "macro_transport": {"type": "object"}
+      }
+    },
+    "universe": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "backtest": {
+      "type": "object",
+      "properties": {
+        "backtest_id": {"type": "string", "format": "uuid"},
+        "hit_rate_mean": {"type": ["number", "null"]},
+        "ece_mean": {"type": ["number", "null"]},
+        "information_ratio": {"type": ["number", "null"]},
+        "pbo": {"type": ["number", "null"]},
+        "pbo_summary": {"type": "object"},
+        "cluster_adjusted_pbo": {"type": ["number", "null"]},
+        "cluster_adjusted_pbo_summary": {"type": "object"},
+        "portfolio_rule_analysis": {"type": "object"},
+        "feature_importance_summary": {"type": "array", "items": {"type": "object"}},
+        "feature_family_importance_summary": {"type": "array", "items": {"type": "object"}}
+      }
+    },
+    "feature_lineage": {
+      "type": "object",
+      "properties": {
+        "feature_catalog": {"type": "array", "items": {"type": "object"}},
+        "feature_importance_summary": {"type": "array", "items": {"type": "object"}},
+        "feature_family_importance_summary": {"type": "array", "items": {"type": "object"}}
+      }
+    },
+    "drift_monitor": {"type": "object"},
+    "regime_monitor": {"type": "object"},
+    "retraining_monitor": {"type": "object"},
+    "paper_trading_summary": {
+      "type": "object",
+      "properties": {
+        "batch_id": {"type": "string", "format": "uuid"},
+        "approval": {"type": ["string", "null"]},
+        "avg_round_trip_cost_bps": {"type": ["number", "null"]},
+        "avg_participation_rate": {"type": ["number", "null"]},
+        "liquidity_capped_trades_this_run": {"type": ["integer", "null"]},
+        "liquidity_blocked_trades_this_run": {"type": ["integer", "null"]},
+        "execution_diagnostics": {"type": "object"},
+        "weekly_execution_diagnostics": {"type": "object"}
+      }
+    },
+    "notes": {
+      "type": "array",
+      "items": {"type": "string"}
+    }
+  }
+}

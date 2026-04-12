@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RiskReview",
+  "type": "object",
+  "required": ["review_id", "forecast_id", "reviewed_at", "checks", "overall_risk_level", "approval"],
+  "properties": {
+    "review_id": {"type": "string", "format": "uuid"},
+    "forecast_id": {"type": "string", "format": "uuid"},
+    "reviewed_at": {"type": "string", "format": "date-time"},
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["check_name", "status", "detail"],
+        "properties": {
+          "check_name": {
+            "type": "string",
+            "enum": [
+              "data_freshness",
+              "feature_drift",
+              "prediction_concentration",
+              "model_staleness",
+              "liquidity_check",
+              "regime_consistency",
+              "hallucination_guard",
+              "source_integrity"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["PASS", "WARNING", "FAIL"]
+          },
+          "detail": {"type": "string"},
+          "metric_value": {"type": ["number", "null"]},
+          "threshold": {"type": ["number", "null"]}
+        }
+      }
+    },
+    "overall_risk_level": {
+      "type": "string",
+      "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
+    },
+    "approval": {
+      "type": "string",
+      "enum": ["AUTO_APPROVED", "MANUAL_REVIEW_REQUIRED", "BLOCKED"]
+    },
+    "approval_notes": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "recommendations": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "retraining_monitor": {
+      "type": "object",
+      "properties": {
+        "should_retrain": {"type": "boolean"},
+        "trigger_count": {"type": "integer"},
+        "triggers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {"type": "string"},
+              "status": {"type": "string"},
+              "detail": {"type": "string"}
+            }
+          }
+        },
+        "observations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {"type": "string"},
+              "status": {"type": "string"},
+              "detail": {"type": "string"}
+            }
+          }
+        },
+        "drift_signal": {"type": "object"},
+        "calibration_signal": {"type": "object"}
+      }
+    }
+  }
+}

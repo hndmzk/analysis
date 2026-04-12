@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ReportPayload",
+  "type": "object",
+  "required": ["report_id", "report_type", "generated_at", "summary", "sections"],
+  "properties": {
+    "report_id": {"type": "string", "format": "uuid"},
+    "report_type": {
+      "type": "string",
+      "enum": ["daily_forecast", "weekly_review", "backtest_report", "drift_alert"]
+    },
+    "generated_at": {"type": "string", "format": "date-time"},
+    "summary": {
+      "type": "string",
+      "maxLength": 500
+    },
+    "sections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["title", "content"],
+        "properties": {
+          "title": {"type": "string"},
+          "content": {"type": "string"},
+          "charts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "chart_type": {
+                  "type": "string",
+                  "enum": ["line", "bar", "heatmap", "scatter", "table"]
+                },
+                "data_ref": {"type": "string"},
+                "title": {"type": "string"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "forecast_ids": {
+      "type": "array",
+      "items": {"type": "string", "format": "uuid"}
+    },
+    "risk_review_id": {"type": "string", "format": "uuid"},
+    "disclaimers": {
+      "type": "array",
+      "items": {"type": "string"}
+    }
+  }
+}
+
