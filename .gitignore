@@ -15,6 +15,6 @@ dist/
 htmlcov/
 .coverage*
 pytest-cache-files-*/
-storage/
+/storage/
 .test-artifacts/
 zzz_smoke_tmp/
