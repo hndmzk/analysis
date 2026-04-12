@@ -17,6 +17,9 @@ operation is possible without any credentials.
 | `FRED_API_KEY` | FRED API adapter | Optional (CSV mirror works without a key) |
 | `COINGECKO_API_KEY` | Crypto adapter | Optional |
 | `ANTHROPIC_API_KEY` | LLM helpers only | Optional |
+| `AUDIT_SLACK_WEBHOOK_URL` | Scheduled audit Slack notifications | Optional |
+| `AUDIT_EMAIL_SMTP_HOST` / `AUDIT_EMAIL_TO` | Scheduled audit email notifications | Optional |
+| `AUDIT_NOTIFY_MIN_SEVERITY` | Notification threshold (`warning` default) | Optional |
 | `CONFIRM_LIVE_TRADING` | Must stay `no` | **Required** |
 | `EMERGENCY_STOP` | Kill switch | Required (`false` by default) |
 
@@ -160,10 +163,22 @@ run is schema-validated at write time.
    `storage/outputs/retraining_event_ledger.parquet` and decide whether
    the trigger is a legitimate drift or a transient regime shift.
 
-## 7. Notifications (not yet wired)
+## 7. Notifications
 
-There is currently no notification layer. For production use, wire a
-post-run hook that inspects the suite payload:
+`scripts/scheduled_audit.ps1` invokes `scripts/notify_audit_status.py`
+after every scheduled run. The notification hook reads
+`storage/logs/scheduled_audits/latest_run.json`, locates the latest suite
+artifact under `storage/outputs/monitor_audit_suites/public_real_market/`,
+and evaluates these implemented alert conditions:
+
+- Audit process failure (`success=false` or non-zero `exit_code`)
+- Effective retraining rate above `AUDIT_NOTIFY_RETRAINING_RATE_THRESHOLD`
+- Base/watch-only retraining, drift, or regime signals when
+  `AUDIT_NOTIFY_INCLUDE_WATCH_ONLY=true`
+- News fallback or news staleness above configured thresholds
+- Cluster-adjusted PBO mean/max above configured thresholds
+
+<!-- Legacy pre-implementation notes are superseded by the checks above:
 
 - `suite_payload.run_count` — ensure all expected runs completed.
 - `suite_payload.distribution_summary.retraining_trigger_rate` — alert
@@ -171,6 +186,49 @@ post-run hook that inspects the suite payload:
 - `suite_payload.distribution_summary.regime_shift_rate` — alert if
   elevated.
 - Any non-zero `failed_sources` in the transport metadata.
+
+-->
+
+By default, the hook sends only `warning` or `critical` findings. A clean
+run prints `No notification needed` into the audit log and exits with
+code 0.
+
+Configure Slack by setting:
+
+```powershell
+$env:AUDIT_SLACK_WEBHOOK_URL = "https://hooks.slack.com/services/..."
+```
+
+Configure email by setting:
+
+```powershell
+$env:AUDIT_EMAIL_SMTP_HOST = "smtp.example.com"
+$env:AUDIT_EMAIL_SMTP_PORT = "587"
+$env:AUDIT_EMAIL_USE_TLS = "true"
+$env:AUDIT_EMAIL_SMTP_USER = "user@example.com"
+$env:AUDIT_EMAIL_SMTP_PASSWORD = "<secret>"
+$env:AUDIT_EMAIL_FROM = "market-agent@example.com"
+$env:AUDIT_EMAIL_TO = "operator@example.com"
+```
+
+Dry-run the current status without sending:
+
+```powershell
+uv run python .\scripts\notify_audit_status.py --dry-run
+```
+
+Useful thresholds:
+
+| Variable | Default | Meaning |
+|---|---:|---|
+| `AUDIT_NOTIFY_MIN_SEVERITY` | `warning` | Minimum severity to send (`ok`, `info`, `warning`, `critical`) |
+| `AUDIT_NOTIFY_ON_OK` | `false` | Send even when no findings exist |
+| `AUDIT_NOTIFY_RETRAINING_RATE_THRESHOLD` | `0.0` | Critical if effective retraining rate is above this |
+| `AUDIT_NOTIFY_BASE_RETRAINING_RATE_THRESHOLD` | `0.0` | Warning if base retraining trigger rate is above this |
+| `AUDIT_NOTIFY_NEWS_FALLBACK_RATE_THRESHOLD` | `0.0` | Warning if news fallback rate is above this |
+| `AUDIT_NOTIFY_NEWS_STALENESS_THRESHOLD` | `0.0` | Warning if mean news staleness is above this |
+| `AUDIT_NOTIFY_CLUSTER_PBO_WARNING_MEAN` | `0.6` | Warning if mean cluster-adjusted PBO is above this |
+| `AUDIT_NOTIFY_CLUSTER_PBO_CRITICAL_MAX` | `0.85` | Critical if max cluster-adjusted PBO is at or above this |
 
 ## 8. Backups
 

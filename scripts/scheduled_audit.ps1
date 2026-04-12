@@ -34,6 +34,27 @@ $StdoutFile = Join-Path $LogDir "$Timestamp.stdout.tmp"
 $StderrFile = Join-Path $LogDir "$Timestamp.stderr.tmp"
 $StatusFile = Join-Path $LogDir "latest_run.json"
 
+function Invoke-AuditNotification {
+    param(
+        [string]$ProjectRoot,
+        [string]$StatusFile,
+        [string]$LogFile
+    )
+
+    try {
+        $NotifyScript = Join-Path $ProjectRoot "scripts\notify_audit_status.py"
+        $UvNotifyCommand = (Get-Command uv -ErrorAction Stop).Source
+        "=== NOTIFICATION ===" | Out-File -FilePath $LogFile -Encoding utf8 -Append
+        & $UvNotifyCommand run python $NotifyScript --status-file $StatusFile *>> $LogFile
+        if ($LASTEXITCODE -ne 0) {
+            "Notification hook exited with code $LASTEXITCODE" | Out-File -FilePath $LogFile -Encoding utf8 -Append
+        }
+    }
+    catch {
+        "Notification hook failed: $($_.Exception.ToString())" | Out-File -FilePath $LogFile -Encoding utf8 -Append
+    }
+}
+
 if (-not (Test-Path $LogDir)) {
     New-Item -ItemType Directory -Path $LogDir -Force | Out-Null
 }
@@ -90,6 +111,7 @@ try {
     }
 
     $status | ConvertTo-Json -Depth 2 | Out-File -FilePath $StatusFile -Encoding utf8
+    Invoke-AuditNotification -ProjectRoot $ProjectRoot -StatusFile $StatusFile -LogFile $LogFile
 
     if ($ExitCode -ne 0) {
         Write-Host "Audit exited with code $ExitCode. See $LogFile"
@@ -118,5 +140,6 @@ catch {
     } | ConvertTo-Json -Depth 2
 
     $status | Out-File -FilePath $StatusFile -Encoding utf8
+    Invoke-AuditNotification -ProjectRoot $ProjectRoot -StatusFile $StatusFile -LogFile $LogFile
     exit 1
 }
