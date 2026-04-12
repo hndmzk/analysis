@@ -18,7 +18,7 @@ jobs:
       - run: uv run mypy
 
   test:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
@@ -47,7 +47,7 @@ jobs:
       - run: uv run pytest tests/unit/test_lstm_model.py tests/unit/test_transformer_model.py -v --tb=short
 
   integration:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
