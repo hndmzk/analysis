@@ -38,6 +38,12 @@ uses the following public data chain. All primary sources are keyless.
 | Fundamentals | `sec_companyfacts` | -- | `offline_fundamental_proxy` |
 | Macro | FRED CSV mirror | -- | local cache |
 
+The default `full_light` ticker set is ETF-based (`SPY`, `QQQ`, `DIA`,
+`GLD`). SEC CompanyFacts is company-filing oriented, so ETF monitor runs
+can legitimately use `offline_fundamental_proxy` even when the SEC
+endpoint itself is reachable. Use the fundamentals smoke test with common
+operating companies such as `AAPL,MSFT` when checking SEC connectivity.
+
 Snapshot fallback lives under `storage/public_data/snapshots/<source>/`.
 When the network is unavailable, the adapter will transparently fall back
 to the most recent snapshot. You can seed snapshots in advance with
@@ -175,7 +181,7 @@ and evaluates these implemented alert conditions:
 - Effective retraining rate above `AUDIT_NOTIFY_RETRAINING_RATE_THRESHOLD`
 - Base/watch-only retraining, drift, or regime signals when
   `AUDIT_NOTIFY_INCLUDE_WATCH_ONLY=true`
-- News fallback or news staleness above configured thresholds
+- News/fundamentals fallback or news staleness above configured thresholds
 - Cluster-adjusted PBO mean/max above configured thresholds
 
 <!-- Legacy pre-implementation notes are superseded by the checks above:
@@ -229,6 +235,7 @@ Useful thresholds:
 | `AUDIT_NOTIFY_WATCH_DRIFT_RATE_THRESHOLD` | `0.20` | Warning if watch-only drift-dominated rate is above this |
 | `AUDIT_NOTIFY_WATCH_REGIME_RATE_THRESHOLD` | `0.20` | Warning if watch-only regime-dominated rate is above this |
 | `AUDIT_NOTIFY_NEWS_FALLBACK_RATE_THRESHOLD` | `0.0` | Warning if news fallback rate is above this |
+| `AUDIT_NOTIFY_FUNDAMENTAL_FALLBACK_RATE_THRESHOLD` | `1.0` | Warning if fundamentals fallback rate is above this; default tolerates ETF monitor fallback |
 | `AUDIT_NOTIFY_NEWS_STALENESS_THRESHOLD` | `0.0` | Warning if mean news staleness is above this |
 | `AUDIT_NOTIFY_CLUSTER_PBO_WARNING_MEAN` | `0.6` | Warning if mean cluster-adjusted PBO is above this |
 | `AUDIT_NOTIFY_CLUSTER_PBO_CRITICAL_MAX` | `0.85` | Critical if max cluster-adjusted PBO is at or above this |

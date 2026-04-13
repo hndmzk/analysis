@@ -394,6 +394,11 @@ def build_public_audit_suite(
         "news_used_source_counts": _value_counts(runs, "news_used_source"),
         "news_transport_origin_counts": _value_counts(runs, "news_transport_origin"),
         "news_fallback_rate": float(sum(bool(run.get("news_fallback_used", False)) for run in runs) / max(len(runs), 1)),
+        "fundamental_used_source_counts": _value_counts(runs, "fundamental_used_source"),
+        "fundamental_transport_origin_counts": _value_counts(runs, "fundamental_transport_origin"),
+        "fundamental_fallback_rate": float(
+            sum(bool(run.get("fundamental_fallback_used", False)) for run in runs) / max(len(runs), 1)
+        ),
         "news_coverage_analysis": _news_coverage_summary(runs),
         "news_utility_comparison": _news_coverage_summary(runs),
         "base_retraining_rate": base_retraining_rate,
@@ -662,6 +667,11 @@ def build_public_audit_suite(
                 "news_fallback_rate": float(
                     sum(bool(run.get("news_fallback_used", False)) for run in subset) / max(len(subset), 1)
                 ),
+                "fundamental_used_source_counts": _value_counts(subset, "fundamental_used_source"),
+                "fundamental_transport_origin_counts": _value_counts(subset, "fundamental_transport_origin"),
+                "fundamental_fallback_rate": float(
+                    sum(bool(run.get("fundamental_fallback_used", False)) for run in subset) / max(len(subset), 1)
+                ),
                 "news_coverage_analysis": _news_coverage_summary(subset),
                 "news_utility_comparison": _news_coverage_summary(subset),
             }
@@ -700,6 +710,11 @@ def build_public_audit_suite(
                 "news_transport_origin_counts": _value_counts(subset, "news_transport_origin"),
                 "news_fallback_rate": float(
                     sum(bool(run.get("news_fallback_used", False)) for run in subset) / max(len(subset), 1)
+                ),
+                "fundamental_used_source_counts": _value_counts(subset, "fundamental_used_source"),
+                "fundamental_transport_origin_counts": _value_counts(subset, "fundamental_transport_origin"),
+                "fundamental_fallback_rate": float(
+                    sum(bool(run.get("fundamental_fallback_used", False)) for run in subset) / max(len(subset), 1)
                 ),
                 "news_coverage_analysis": _news_coverage_summary(subset),
                 "news_utility_comparison": _news_coverage_summary(subset),

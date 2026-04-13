@@ -153,6 +153,7 @@ def main() -> None:
             macro_transport = cast(dict[str, object], data_sources.get("macro_transport", {}))
             feature_sources = cast(dict[str, object], data_sources.get("feature_sources", {}))
             news_source = cast(dict[str, object], feature_sources.get("news", {}))
+            fundamental_source = cast(dict[str, object], feature_sources.get("fundamental", {}))
             feature_catalog = cast(list[dict[str, object]], backtest.get("feature_catalog", []))
             news_catalog = [
                 item for item in feature_catalog if str(item.get("feature_family", "")) == "news"
@@ -191,6 +192,7 @@ def main() -> None:
             )
             news_coverage = max(0.0, 1.0 - news_missing_rate)
             news_transport = cast(dict[str, object], news_source.get("transport", {}))
+            fundamental_transport = cast(dict[str, object], fundamental_source.get("transport", {}))
             run_rows.append(
                 {
                     "audit_id": payload["audit_id"],
@@ -231,6 +233,10 @@ def main() -> None:
                     "news_requested_source": str(news_source.get("requested_source", "")),
                     "news_fallback_used": bool(news_source.get("fallback_used", False)),
                     "news_transport_origin": _transport_origin_label(news_transport),
+                    "fundamental_used_source": str(fundamental_source.get("used_source", "")),
+                    "fundamental_requested_source": str(fundamental_source.get("requested_source", "")),
+                    "fundamental_fallback_used": bool(fundamental_source.get("fallback_used", False)),
+                    "fundamental_transport_origin": _transport_origin_label(fundamental_transport),
                     "news_feature_missing_rate": news_missing_rate,
                     "news_feature_coverage": news_coverage,
                     "news_feature_stale_rate": news_stale_rate,

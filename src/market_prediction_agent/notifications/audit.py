@@ -29,6 +29,7 @@ class NotificationThresholds:
     effective_retraining_rate: float = 0.0
     base_retraining_rate: float = 0.20
     news_fallback_rate: float = 0.0
+    fundamental_fallback_rate: float = 1.0
     news_staleness_mean: float = 0.0
     cluster_pbo_warning_mean: float = 0.6
     cluster_pbo_critical_max: float = 0.85
@@ -113,6 +114,7 @@ def thresholds_from_env(env: Mapping[str, str] | None = None) -> NotificationThr
         effective_retraining_rate=_as_float(source.get("AUDIT_NOTIFY_RETRAINING_RATE_THRESHOLD"), 0.0),
         base_retraining_rate=_as_float(source.get("AUDIT_NOTIFY_BASE_RETRAINING_RATE_THRESHOLD"), 0.20),
         news_fallback_rate=_as_float(source.get("AUDIT_NOTIFY_NEWS_FALLBACK_RATE_THRESHOLD"), 0.0),
+        fundamental_fallback_rate=_as_float(source.get("AUDIT_NOTIFY_FUNDAMENTAL_FALLBACK_RATE_THRESHOLD"), 1.0),
         news_staleness_mean=_as_float(source.get("AUDIT_NOTIFY_NEWS_STALENESS_THRESHOLD"), 0.0),
         cluster_pbo_warning_mean=_as_float(source.get("AUDIT_NOTIFY_CLUSTER_PBO_WARNING_MEAN"), 0.6),
         cluster_pbo_critical_max=_as_float(source.get("AUDIT_NOTIFY_CLUSTER_PBO_CRITICAL_MAX"), 0.85),
@@ -194,6 +196,7 @@ def evaluate_audit_status(
         retraining_rate = _as_float(summary.get("retraining_rate"))
         base_retraining_rate = _as_float(summary.get("base_retraining_rate"))
         news_fallback_rate = _as_float(summary.get("news_fallback_rate"))
+        fundamental_fallback_rate = _as_float(summary.get("fundamental_fallback_rate"))
         news_staleness_mean = _distribution_value(summary, "news_feature_staleness", "mean")
         cluster_pbo_mean = _distribution_value(summary, "cluster_adjusted_pbo", "mean")
         cluster_pbo_max = _distribution_value(summary, "cluster_adjusted_pbo", "max")
@@ -221,6 +224,14 @@ def evaluate_audit_status(
             label="News fallback rate",
             value=news_fallback_rate,
             threshold=resolved_thresholds.news_fallback_rate,
+        )
+        _append_rate_finding(
+            findings,
+            severity="warning",
+            code="fundamental_fallback",
+            label="Fundamental fallback rate",
+            value=fundamental_fallback_rate,
+            threshold=resolved_thresholds.fundamental_fallback_rate,
         )
         _append_rate_finding(
             findings,
@@ -335,6 +346,7 @@ def render_notification_text(
             f"retraining_rate={_format_rate(_as_float(summary.get('retraining_rate')))} "
             f"base_retraining_rate={_format_rate(_as_float(summary.get('base_retraining_rate')))} "
             f"news_fallback_rate={_format_rate(_as_float(summary.get('news_fallback_rate')))} "
+            f"fundamental_fallback_rate={_format_rate(_as_float(summary.get('fundamental_fallback_rate')))} "
             f"cluster_adjusted_pbo_mean={_format_float(_distribution_value(summary, 'cluster_adjusted_pbo', 'mean'))} "
             f"cluster_adjusted_pbo_max={_format_float(_distribution_value(summary, 'cluster_adjusted_pbo', 'max'))}"
         )

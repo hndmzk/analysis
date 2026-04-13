@@ -20,6 +20,7 @@ def _suite_payload(**summary_overrides: object) -> dict[str, object]:
         "retraining_rate": 0.0,
         "base_retraining_rate": 0.0,
         "news_fallback_rate": 0.0,
+        "fundamental_fallback_rate": 0.0,
         "cluster_adjusted_pbo": {"mean": 0.0, "max": 0.0},
         "news_feature_staleness": {"mean": 0.0},
         "drift_dominated_analysis": {"raw_rate": 0.0},
@@ -84,6 +85,7 @@ def test_evaluate_audit_status_tolerates_suppressed_watch_baseline() -> None:
         status={"success": True, "exit_code": 0, "profile": "full_light", "source_mode": "live"},
         suite_payload=_suite_payload(
             base_retraining_rate=1 / 6,
+            fundamental_fallback_rate=1.0,
             drift_dominated_analysis={"raw_rate": 1 / 6},
             regime_dominated_analysis={"raw_rate": 1 / 6},
         ),
@@ -94,16 +96,29 @@ def test_evaluate_audit_status_tolerates_suppressed_watch_baseline() -> None:
     assert report.findings == []
 
 
+def test_evaluate_audit_status_can_flag_fundamental_fallback_rate() -> None:
+    report = evaluate_audit_status(
+        status={"success": True, "exit_code": 0, "profile": "full_light", "source_mode": "live"},
+        suite_payload=_suite_payload(fundamental_fallback_rate=1.0),
+        thresholds=NotificationThresholds(fundamental_fallback_rate=0.5),
+    )
+
+    assert report.severity == "warning"
+    assert {finding.code for finding in report.findings} == {"fundamental_fallback"}
+
+
 def test_thresholds_from_env_accepts_watch_only_overrides() -> None:
     thresholds = thresholds_from_env(
         {
             "AUDIT_NOTIFY_BASE_RETRAINING_RATE_THRESHOLD": "0.30",
+            "AUDIT_NOTIFY_FUNDAMENTAL_FALLBACK_RATE_THRESHOLD": "0.70",
             "AUDIT_NOTIFY_WATCH_DRIFT_RATE_THRESHOLD": "0.40",
             "AUDIT_NOTIFY_WATCH_REGIME_RATE_THRESHOLD": "0.50",
         }
     )
 
     assert thresholds.base_retraining_rate == 0.30
+    assert thresholds.fundamental_fallback_rate == 0.70
     assert thresholds.watch_drift_rate == 0.40
     assert thresholds.watch_regime_rate == 0.50
 

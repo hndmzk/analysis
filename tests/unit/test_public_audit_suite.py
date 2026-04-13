@@ -51,6 +51,10 @@ def test_public_audit_suite_helpers_build_distribution_summary() -> None:
                 "news_requested_source": "yahoo_finance_rss",
                 "news_fallback_used": False,
                 "news_transport_origin": "network",
+                "fundamental_used_source": "sec_companyfacts",
+                "fundamental_requested_source": "sec_companyfacts",
+                "fundamental_fallback_used": False,
+                "fundamental_transport_origin": "network",
                 "news_feature_missing_rate": 0.10,
                 "news_feature_coverage": 0.90,
                 "news_feature_stale_rate": 0.00,
@@ -160,6 +164,10 @@ def test_public_audit_suite_helpers_build_distribution_summary() -> None:
                 "news_requested_source": "yahoo_finance_rss",
                 "news_fallback_used": True,
                 "news_transport_origin": "snapshot",
+                "fundamental_used_source": "offline_fundamental_proxy",
+                "fundamental_requested_source": "sec_companyfacts",
+                "fundamental_fallback_used": True,
+                "fundamental_transport_origin": "generated",
                 "news_feature_missing_rate": 0.35,
                 "news_feature_coverage": 0.65,
                 "news_feature_stale_rate": 0.20,
@@ -260,6 +268,9 @@ def test_public_audit_suite_helpers_build_distribution_summary() -> None:
     assert payload["distribution_summary"]["news_used_source_counts"]["yahoo_finance_rss"] == 1
     assert payload["distribution_summary"]["news_transport_origin_counts"]["network"] == 1
     assert payload["distribution_summary"]["news_fallback_rate"] == pytest.approx(0.5)
+    assert payload["distribution_summary"]["fundamental_used_source_counts"]["sec_companyfacts"] == 1
+    assert payload["distribution_summary"]["fundamental_transport_origin_counts"]["generated"] == 1
+    assert payload["distribution_summary"]["fundamental_fallback_rate"] == pytest.approx(0.5)
     coverage_analysis = payload["distribution_summary"]["news_coverage_analysis"]
     utility_comparison = payload["distribution_summary"]["news_utility_comparison"]
     lookbacks = {item["window_days"]: item for item in coverage_analysis["lookback_windows"]}
@@ -308,6 +319,7 @@ def test_public_audit_suite_helpers_build_distribution_summary() -> None:
     by_ticker_set = {item["ticker_set"]: item for item in payload["by_ticker_set"]}
     assert by_ticker_set["SPY,QQQ,DIA,GLD"]["news_feature_coverage"]["mean"] == pytest.approx(0.9)
     assert by_ticker_set["SPY,QQQ,GLD"]["news_used_source_counts"]["offline_news_proxy"] == 1
+    assert by_ticker_set["SPY,QQQ,GLD"]["fundamental_fallback_rate"] == pytest.approx(1.0)
     assert (
         by_ticker_set["SPY,QQQ,DIA,GLD"]["news_coverage_analysis"]["lookback_windows"][2]["coverage"]["mean"]
         == pytest.approx(0.96)
