@@ -34,6 +34,14 @@ $StdoutFile = Join-Path $LogDir "$Timestamp.stdout.tmp"
 $StderrFile = Join-Path $LogDir "$Timestamp.stderr.tmp"
 $StatusFile = Join-Path $LogDir "latest_run.json"
 
+# Keep scheduled runs predictable on small Windows hosts. OpenBLAS can otherwise
+# over-allocate worker threads and fail late in the audit.
+$env:OPENBLAS_NUM_THREADS = if ($env:OPENBLAS_NUM_THREADS) { $env:OPENBLAS_NUM_THREADS } else { "1" }
+$env:OMP_NUM_THREADS = if ($env:OMP_NUM_THREADS) { $env:OMP_NUM_THREADS } else { "1" }
+$env:MKL_NUM_THREADS = if ($env:MKL_NUM_THREADS) { $env:MKL_NUM_THREADS } else { "1" }
+$env:NUMEXPR_NUM_THREADS = if ($env:NUMEXPR_NUM_THREADS) { $env:NUMEXPR_NUM_THREADS } else { "1" }
+$env:LOKY_MAX_CPU_COUNT = if ($env:LOKY_MAX_CPU_COUNT) { $env:LOKY_MAX_CPU_COUNT } else { "2" }
+
 function Invoke-AuditNotification {
     param(
         [string]$ProjectRoot,
@@ -45,7 +53,8 @@ function Invoke-AuditNotification {
         $NotifyScript = Join-Path $ProjectRoot "scripts\notify_audit_status.py"
         $UvNotifyCommand = (Get-Command uv -ErrorAction Stop).Source
         "=== NOTIFICATION ===" | Out-File -FilePath $LogFile -Encoding utf8 -Append
-        & $UvNotifyCommand run python $NotifyScript --status-file $StatusFile *>> $LogFile
+        & $UvNotifyCommand run python $NotifyScript --status-file $StatusFile 2>&1 |
+            Out-File -FilePath $LogFile -Encoding utf8 -Append
         if ($LASTEXITCODE -ne 0) {
             "Notification hook exited with code $LASTEXITCODE" | Out-File -FilePath $LogFile -Encoding utf8 -Append
         }
