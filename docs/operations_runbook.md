@@ -224,7 +224,10 @@ Useful thresholds:
 | `AUDIT_NOTIFY_MIN_SEVERITY` | `warning` | Minimum severity to send (`ok`, `info`, `warning`, `critical`) |
 | `AUDIT_NOTIFY_ON_OK` | `false` | Send even when no findings exist |
 | `AUDIT_NOTIFY_RETRAINING_RATE_THRESHOLD` | `0.0` | Critical if effective retraining rate is above this |
-| `AUDIT_NOTIFY_BASE_RETRAINING_RATE_THRESHOLD` | `0.0` | Warning if base retraining trigger rate is above this |
+| `AUDIT_NOTIFY_BASE_RETRAINING_RATE_THRESHOLD` | `0.20` | Warning if base retraining trigger rate is above this |
+| `AUDIT_NOTIFY_INCLUDE_WATCH_ONLY` | `true` | Include suppressed/watch-only drift and regime findings |
+| `AUDIT_NOTIFY_WATCH_DRIFT_RATE_THRESHOLD` | `0.20` | Warning if watch-only drift-dominated rate is above this |
+| `AUDIT_NOTIFY_WATCH_REGIME_RATE_THRESHOLD` | `0.20` | Warning if watch-only regime-dominated rate is above this |
 | `AUDIT_NOTIFY_NEWS_FALLBACK_RATE_THRESHOLD` | `0.0` | Warning if news fallback rate is above this |
 | `AUDIT_NOTIFY_NEWS_STALENESS_THRESHOLD` | `0.0` | Warning if mean news staleness is above this |
 | `AUDIT_NOTIFY_CLUSTER_PBO_WARNING_MEAN` | `0.6` | Warning if mean cluster-adjusted PBO is above this |

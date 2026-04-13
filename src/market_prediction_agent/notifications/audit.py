@@ -27,12 +27,14 @@ class NotificationFinding:
 @dataclass(frozen=True)
 class NotificationThresholds:
     effective_retraining_rate: float = 0.0
-    base_retraining_rate: float = 0.0
+    base_retraining_rate: float = 0.20
     news_fallback_rate: float = 0.0
     news_staleness_mean: float = 0.0
     cluster_pbo_warning_mean: float = 0.6
     cluster_pbo_critical_max: float = 0.85
     include_watch_only: bool = True
+    watch_drift_rate: float = 0.20
+    watch_regime_rate: float = 0.20
 
 
 @dataclass(frozen=True)
@@ -109,12 +111,14 @@ def thresholds_from_env(env: Mapping[str, str] | None = None) -> NotificationThr
     source = env or os.environ
     return NotificationThresholds(
         effective_retraining_rate=_as_float(source.get("AUDIT_NOTIFY_RETRAINING_RATE_THRESHOLD"), 0.0),
-        base_retraining_rate=_as_float(source.get("AUDIT_NOTIFY_BASE_RETRAINING_RATE_THRESHOLD"), 0.0),
+        base_retraining_rate=_as_float(source.get("AUDIT_NOTIFY_BASE_RETRAINING_RATE_THRESHOLD"), 0.20),
         news_fallback_rate=_as_float(source.get("AUDIT_NOTIFY_NEWS_FALLBACK_RATE_THRESHOLD"), 0.0),
         news_staleness_mean=_as_float(source.get("AUDIT_NOTIFY_NEWS_STALENESS_THRESHOLD"), 0.0),
         cluster_pbo_warning_mean=_as_float(source.get("AUDIT_NOTIFY_CLUSTER_PBO_WARNING_MEAN"), 0.6),
         cluster_pbo_critical_max=_as_float(source.get("AUDIT_NOTIFY_CLUSTER_PBO_CRITICAL_MAX"), 0.85),
         include_watch_only=_as_bool(source.get("AUDIT_NOTIFY_INCLUDE_WATCH_ONLY"), True),
+        watch_drift_rate=_as_float(source.get("AUDIT_NOTIFY_WATCH_DRIFT_RATE_THRESHOLD"), 0.20),
+        watch_regime_rate=_as_float(source.get("AUDIT_NOTIFY_WATCH_REGIME_RATE_THRESHOLD"), 0.20),
     )
 
 
@@ -261,7 +265,7 @@ def evaluate_audit_status(
                 code="watch_drift",
                 label="Watch-only drift-dominated rate",
                 value=drift_raw_rate,
-                threshold=0.0,
+                threshold=resolved_thresholds.watch_drift_rate,
             )
             _append_rate_finding(
                 findings,
@@ -269,7 +273,7 @@ def evaluate_audit_status(
                 code="watch_regime",
                 label="Watch-only regime-dominated rate",
                 value=regime_raw_rate,
-                threshold=0.0,
+                threshold=resolved_thresholds.watch_regime_rate,
             )
 
     severity = _max_severity(findings)

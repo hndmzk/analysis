@@ -11,6 +11,7 @@ from market_prediction_agent.notifications.audit import (
     evaluate_audit_status,
     find_latest_suite_path,
     should_send_notification,
+    thresholds_from_env,
 )
 
 
@@ -76,6 +77,35 @@ def test_evaluate_audit_status_stays_ok_for_clean_suite() -> None:
     assert report.severity == "ok"
     assert report.findings == []
     assert not should_send_notification(report, min_severity="warning", notify_on_ok=False)
+
+
+def test_evaluate_audit_status_tolerates_suppressed_watch_baseline() -> None:
+    report = evaluate_audit_status(
+        status={"success": True, "exit_code": 0, "profile": "full_light", "source_mode": "live"},
+        suite_payload=_suite_payload(
+            base_retraining_rate=1 / 6,
+            drift_dominated_analysis={"raw_rate": 1 / 6},
+            regime_dominated_analysis={"raw_rate": 1 / 6},
+        ),
+        thresholds=NotificationThresholds(),
+    )
+
+    assert report.severity == "ok"
+    assert report.findings == []
+
+
+def test_thresholds_from_env_accepts_watch_only_overrides() -> None:
+    thresholds = thresholds_from_env(
+        {
+            "AUDIT_NOTIFY_BASE_RETRAINING_RATE_THRESHOLD": "0.30",
+            "AUDIT_NOTIFY_WATCH_DRIFT_RATE_THRESHOLD": "0.40",
+            "AUDIT_NOTIFY_WATCH_REGIME_RATE_THRESHOLD": "0.50",
+        }
+    )
+
+    assert thresholds.base_retraining_rate == 0.30
+    assert thresholds.watch_drift_rate == 0.40
+    assert thresholds.watch_regime_rate == 0.50
 
 
 def test_build_report_from_files_uses_latest_suite_artifact() -> None:
