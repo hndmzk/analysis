@@ -26,6 +26,7 @@ class NotificationFinding:
 
 @dataclass(frozen=True)
 class NotificationThresholds:
+    information_ratio_min: float = 0.0
     effective_retraining_rate: float = 0.0
     base_retraining_rate: float = 0.20
     news_fallback_rate: float = 0.0
@@ -111,6 +112,7 @@ def find_latest_suite_path(suite_root: Path) -> Path | None:
 def thresholds_from_env(env: Mapping[str, str] | None = None) -> NotificationThresholds:
     source = env or os.environ
     return NotificationThresholds(
+        information_ratio_min=_as_float(source.get("AUDIT_NOTIFY_INFORMATION_RATIO_MIN"), 0.0),
         effective_retraining_rate=_as_float(source.get("AUDIT_NOTIFY_RETRAINING_RATE_THRESHOLD"), 0.0),
         base_retraining_rate=_as_float(source.get("AUDIT_NOTIFY_BASE_RETRAINING_RATE_THRESHOLD"), 0.20),
         news_fallback_rate=_as_float(source.get("AUDIT_NOTIFY_NEWS_FALLBACK_RATE_THRESHOLD"), 0.0),
@@ -193,6 +195,7 @@ def evaluate_audit_status(
             )
 
         summary = _as_dict(suite_payload.get("distribution_summary"))
+        information_ratio_mean = _distribution_value(summary, "information_ratio", "mean")
         retraining_rate = _as_float(summary.get("retraining_rate"))
         base_retraining_rate = _as_float(summary.get("base_retraining_rate"))
         news_fallback_rate = _as_float(summary.get("news_fallback_rate"))
@@ -200,6 +203,19 @@ def evaluate_audit_status(
         news_staleness_mean = _distribution_value(summary, "news_feature_staleness", "mean")
         cluster_pbo_mean = _distribution_value(summary, "cluster_adjusted_pbo", "mean")
         cluster_pbo_max = _distribution_value(summary, "cluster_adjusted_pbo", "max")
+
+        if information_ratio_mean < resolved_thresholds.information_ratio_min:
+            findings.append(
+                NotificationFinding(
+                    severity="warning",
+                    code="information_ratio_low",
+                    message=(
+                        "Information ratio mean is "
+                        f"{_format_float(information_ratio_mean)} "
+                        f"(minimum {_format_float(resolved_thresholds.information_ratio_min)})."
+                    ),
+                )
+            )
 
         _append_rate_finding(
             findings,
@@ -343,6 +359,7 @@ def render_notification_text(
         )
         lines.append(
             "metrics="
+            f"information_ratio_mean={_format_float(_distribution_value(summary, 'information_ratio', 'mean'))} "
             f"retraining_rate={_format_rate(_as_float(summary.get('retraining_rate')))} "
             f"base_retraining_rate={_format_rate(_as_float(summary.get('base_retraining_rate')))} "
             f"news_fallback_rate={_format_rate(_as_float(summary.get('news_fallback_rate')))} "

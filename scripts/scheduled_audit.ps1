@@ -14,14 +14,24 @@
 .PARAMETER SourceMode
     Data source mode. Default: live
 
+.PARAMETER TickerSets
+    Optional ticker-set override passed to run_public_audit_suite.py.
+
+.PARAMETER TaskLabel
+    Optional label used to separate log and latest status filenames for
+    multiple scheduled audit tasks.
+
 .EXAMPLE
     .\scripts\scheduled_audit.ps1
     .\scripts\scheduled_audit.ps1 -Profile fast -SourceMode dummy
+    .\scripts\scheduled_audit.ps1 -Profile fast -SourceMode live -TickerSets "AAPL,MSFT,NVDA,AMZN,META" -TaskLabel "individual_stocks_fast"
 #>
 
 param(
     [string]$Profile = "full_light",
-    [string]$SourceMode = "live"
+    [string]$SourceMode = "live",
+    [string]$TickerSets = "",
+    [string]$TaskLabel = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -29,10 +39,13 @@ $ErrorActionPreference = "Stop"
 $ProjectRoot = Split-Path -Parent (Split-Path -Parent $PSCommandPath)
 $LogDir = Join-Path $ProjectRoot "storage\logs\scheduled_audits"
 $Timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
-$LogFile = Join-Path $LogDir "$Timestamp.log"
-$StdoutFile = Join-Path $LogDir "$Timestamp.stdout.tmp"
-$StderrFile = Join-Path $LogDir "$Timestamp.stderr.tmp"
-$StatusFile = Join-Path $LogDir "latest_run.json"
+$SafeTaskLabel = $TaskLabel -replace "[^A-Za-z0-9_.-]", "_"
+$FilePrefix = if ($SafeTaskLabel) { "$Timestamp-$SafeTaskLabel" } else { $Timestamp }
+$StatusFileName = if ($SafeTaskLabel) { "latest_run_$SafeTaskLabel.json" } else { "latest_run.json" }
+$LogFile = Join-Path $LogDir "$FilePrefix.log"
+$StdoutFile = Join-Path $LogDir "$FilePrefix.stdout.tmp"
+$StderrFile = Join-Path $LogDir "$FilePrefix.stderr.tmp"
+$StatusFile = Join-Path $LogDir $StatusFileName
 
 # Keep scheduled runs predictable on small Windows hosts. OpenBLAS can otherwise
 # over-allocate worker threads and fail late in the audit.
@@ -74,6 +87,9 @@ try {
     $AuditScript = Join-Path $ProjectRoot "scripts\run_public_audit_suite.py"
     $UvCommand = (Get-Command uv -ErrorAction Stop).Source
     $ArgumentList = "run python `"$AuditScript`" --profile `"$Profile`" --source-mode `"$SourceMode`""
+    if ($TickerSets) {
+        $ArgumentList = "$ArgumentList --ticker-sets `"$TickerSets`""
+    }
 
     Push-Location $ProjectRoot
     try {
@@ -95,8 +111,10 @@ try {
     $EndTime = Get-Date
     $Duration = ($EndTime - $StartTime).TotalSeconds
 
+    $StdoutText = ""
     "=== STDOUT ===" | Out-File -FilePath $LogFile -Encoding utf8
     if (Test-Path $StdoutFile) {
+        $StdoutText = Get-Content -Path $StdoutFile -Raw
         Get-Content -Path $StdoutFile | Out-File -FilePath $LogFile -Encoding utf8 -Append
     }
     "=== STDERR ===" | Out-File -FilePath $LogFile -Encoding utf8 -Append
@@ -109,10 +127,25 @@ try {
         timestamp    = $Timestamp
         profile      = $Profile
         source_mode  = $SourceMode
+        ticker_sets  = $TickerSets
+        task_label   = $SafeTaskLabel
         exit_code    = $ExitCode
         duration_sec = [math]::Round($Duration, 1)
         log_file     = $LogFile
         success      = ($ExitCode -eq 0)
+    }
+
+    if ($StdoutText) {
+        try {
+            $SuiteOutput = $StdoutText | ConvertFrom-Json -ErrorAction Stop
+            if ($SuiteOutput.suite_path) {
+                $status["suite_path"] = [string]$SuiteOutput.suite_path
+            }
+        }
+        catch {
+            "Could not parse audit stdout JSON for suite_path: $($_.Exception.Message)" |
+                Out-File -FilePath $LogFile -Encoding utf8 -Append
+        }
     }
 
     if ($ExitCode -ne 0) {
@@ -141,6 +174,8 @@ catch {
         timestamp    = $Timestamp
         profile      = $Profile
         source_mode  = $SourceMode
+        ticker_sets  = $TickerSets
+        task_label   = $SafeTaskLabel
         exit_code    = 1
         duration_sec = [math]::Round($Duration, 1)
         log_file     = $LogFile

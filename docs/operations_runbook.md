@@ -134,6 +134,25 @@ A weekly task is registered as `MarketPredictionAgent-WeeklyAudit`.
 Start-ScheduledTask -TaskName 'MarketPredictionAgent-WeeklyAudit'
 ```
 
+An optional individual-stock monitor can be registered separately without
+overwriting the ETF weekly audit:
+
+```powershell
+.\scripts\register_scheduled_task.ps1 `
+  -TaskName "MarketPredictionAgent-IndividualStocksFastAudit" `
+  -DayOfWeek Tuesday,Thursday `
+  -Time "07:00" `
+  -Profile fast `
+  -SourceMode live `
+  -TickerSets "AAPL,MSFT,NVDA,AMZN,META" `
+  -TaskLabel "individual_stocks_fast"
+```
+
+This writes `latest_run_individual_stocks_fast.json` and timestamped
+`*-individual_stocks_fast.log` files under
+`storage/logs/scheduled_audits/`. The profile is intentionally `fast`
+because it is for forward monitoring frequency, not deep model review.
+
 The wrapper script `scripts/scheduled_audit.ps1` handles logging and
 status tracking:
 
@@ -178,6 +197,7 @@ artifact under `storage/outputs/monitor_audit_suites/public_real_market/`,
 and evaluates these implemented alert conditions:
 
 - Audit process failure (`success=false` or non-zero `exit_code`)
+- Mean information ratio below `AUDIT_NOTIFY_INFORMATION_RATIO_MIN`
 - Effective retraining rate above `AUDIT_NOTIFY_RETRAINING_RATE_THRESHOLD`
 - Base/watch-only retraining, drift, or regime signals when
   `AUDIT_NOTIFY_INCLUDE_WATCH_ONLY=true`
@@ -229,6 +249,7 @@ Useful thresholds:
 |---|---:|---|
 | `AUDIT_NOTIFY_MIN_SEVERITY` | `warning` | Minimum severity to send (`ok`, `info`, `warning`, `critical`) |
 | `AUDIT_NOTIFY_ON_OK` | `false` | Send even when no findings exist |
+| `AUDIT_NOTIFY_INFORMATION_RATIO_MIN` | `0.0` | Warning if mean information ratio is below this |
 | `AUDIT_NOTIFY_RETRAINING_RATE_THRESHOLD` | `0.0` | Critical if effective retraining rate is above this |
 | `AUDIT_NOTIFY_BASE_RETRAINING_RATE_THRESHOLD` | `0.20` | Warning if base retraining trigger rate is above this |
 | `AUDIT_NOTIFY_INCLUDE_WATCH_ONLY` | `true` | Include suppressed/watch-only drift and regime findings |

@@ -17,6 +17,7 @@ from market_prediction_agent.notifications.audit import (
 
 def _suite_payload(**summary_overrides: object) -> dict[str, object]:
     summary: dict[str, object] = {
+        "information_ratio": {"mean": 1.0},
         "retraining_rate": 0.0,
         "base_retraining_rate": 0.0,
         "news_fallback_rate": 0.0,
@@ -107,9 +108,21 @@ def test_evaluate_audit_status_can_flag_fundamental_fallback_rate() -> None:
     assert {finding.code for finding in report.findings} == {"fundamental_fallback"}
 
 
+def test_evaluate_audit_status_flags_low_information_ratio() -> None:
+    report = evaluate_audit_status(
+        status={"success": True, "exit_code": 0, "profile": "fast", "source_mode": "live"},
+        suite_payload=_suite_payload(information_ratio={"mean": -0.25}),
+        thresholds=NotificationThresholds(),
+    )
+
+    assert report.severity == "warning"
+    assert {finding.code for finding in report.findings} == {"information_ratio_low"}
+
+
 def test_thresholds_from_env_accepts_watch_only_overrides() -> None:
     thresholds = thresholds_from_env(
         {
+            "AUDIT_NOTIFY_INFORMATION_RATIO_MIN": "-0.10",
             "AUDIT_NOTIFY_BASE_RETRAINING_RATE_THRESHOLD": "0.30",
             "AUDIT_NOTIFY_FUNDAMENTAL_FALLBACK_RATE_THRESHOLD": "0.70",
             "AUDIT_NOTIFY_WATCH_DRIFT_RATE_THRESHOLD": "0.40",
@@ -117,6 +130,7 @@ def test_thresholds_from_env_accepts_watch_only_overrides() -> None:
         }
     )
 
+    assert thresholds.information_ratio_min == -0.10
     assert thresholds.base_retraining_rate == 0.30
     assert thresholds.fundamental_fallback_rate == 0.70
     assert thresholds.watch_drift_rate == 0.40
