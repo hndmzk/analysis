@@ -37,7 +37,7 @@
     # Register individual-stock fast audit:
     .\scripts\register_scheduled_task.ps1 `
         -TaskName "MarketPredictionAgent-IndividualStocksFastAudit" `
-        -DayOfWeek Tuesday,Thursday `
+        -DayOfWeek Monday,Tuesday,Wednesday,Thursday,Friday `
         -Time "07:00" `
         -Profile fast `
         -SourceMode live `

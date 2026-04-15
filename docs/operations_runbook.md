@@ -140,7 +140,7 @@ overwriting the ETF weekly audit:
 ```powershell
 .\scripts\register_scheduled_task.ps1 `
   -TaskName "MarketPredictionAgent-IndividualStocksFastAudit" `
-  -DayOfWeek Tuesday,Thursday `
+  -DayOfWeek Monday,Tuesday,Wednesday,Thursday,Friday `
   -Time "07:00" `
   -Profile fast `
   -SourceMode live `
@@ -148,7 +148,7 @@ overwriting the ETF weekly audit:
   -TaskLabel "individual_stocks_fast"
 ```
 
-This writes `latest_run_individual_stocks_fast.json` and timestamped
+This weekday schedule writes `latest_run_individual_stocks_fast.json` and timestamped
 `*-individual_stocks_fast.log` files under
 `storage/logs/scheduled_audits/`. The profile is intentionally `fast`
 because it is for forward monitoring frequency, not deep model review.
